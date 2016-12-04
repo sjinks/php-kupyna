@@ -2,7 +2,7 @@
 ini_set('memory_limit', '2G');
 $size  = 200;
 $data  = str_repeat('x', $size * 1048576);
-$algos = array('stribog');
+$algos = hash_algos();
 foreach ($algos as $algo) {
 	$b = microtime(true);
 	$h = hash($algo, $data);
