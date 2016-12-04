@@ -1,0 +1,27 @@
+language:
+  - php
+  - c
+
+compiler:
+  - gcc
+  - clang
+
+sudo: false
+
+php:
+  - 5.3
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7.0
+
+before_script:
+  - phpize && ./configure CFLAGS="-O2 -g3 -Wall -Werror" --silent && make --silent && make install
+
+script:
+  - .travis/run_php_tests.sh
+  - phpenv config-add .travis/kupyna.ini
+  - $(phpenv which php) benchmark.php
+
+after_failure:
+  - .travis/after_failure.sh
