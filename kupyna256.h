@@ -27,6 +27,7 @@ struct kupyna256_ctx_t {
 
 void kupyna256_init(struct kupyna256_ctx_t* ctx);
 void kupyna256_update(struct kupyna256_ctx_t* ctx, const uint8_t* data, size_t len);
+void kupyna256_update_aligned(struct kupyna256_ctx_t* ctx, const uint8_t* data, size_t len);
 void kupyna256_final(struct kupyna256_ctx_t* ctx, uint8_t* hash);
 void kupyna256_final2(struct kupyna256_ctx_t* ctx, uint8_t* hash, size_t bits);
 
