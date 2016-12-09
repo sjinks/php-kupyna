@@ -8,12 +8,20 @@ Tested with PHP 5.4, 5.5, 5.6, 7.0, 7.1
 
 This extension provides implementation of DSTU 7564:2014 256 and 512 bit hash functions to be used with PHP [hash](http://php.net/hash) extension.
 
-The extension does not introduce any new functions; instead, it registers three hashes:
+The extension registers three hashes:
   * `kupyna-256` (DSTU 7564:2014 256 bit hash function);
   * `kupyna-384` (DSTU 7564:2014 384 bit hash function);
   * `kupyna-512` (DSTU 7564:2014 512 bit hash function);
 
 These hashes can be used with any function from PHP `hash` extension.
+
+The extension also makes these functions available:
+  * `string kupyna256_kmac(string $key, string $data)`
+  * `string kupyna384_kmac(string $key, string $data)`
+  * `string kupyna512_kmac(string $key, string $data)`
+
+These functions return KMAC code (like HMAC, but computed differently) using the 256/384/512-bit key $key over the message $data.
+If the key size is less than 256/384/612 bits, the key is hashed with the respective `kupynaXXX` function, and the returned result (which will be of the required size) is used as the key. If the key is longer than required, it will be truncated.
 
 ## Installing/Configuring
 
