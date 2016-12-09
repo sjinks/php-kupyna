@@ -6,6 +6,8 @@
 #include <emmintrin.h>
 #elif defined(__SSE__)
 #include <xmmintrin.h>
+#elif defined(__MMX__)
+#include <mmintrin.h>
 #endif
 
 union uint512_t {
@@ -13,6 +15,8 @@ union uint512_t {
     __m128i h[4];
 #elif defined(__SSE__)
     __m128 h[4];
+#elif defined(__MMX__)
+    __m64 mq[8];
 #endif
     uint64_t q[8];
     uint8_t b[64];

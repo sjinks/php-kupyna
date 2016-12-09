@@ -76,8 +76,14 @@ static void outputTransform(struct kupyna256_ctx_t* ctx)
         ctx->h.h[column+1] = _mm_xor_si128(ctx->h.h[column+1], t1.h[column+1]);
     }
 #elif defined(__SSE__)
-    for (uint_fast32_t column=0; column<4; ++column) {
-        ctx->h.h[column] = _mm_xor_ps(ctx->h.h[column], t1.h[column]);
+    for (uint_fast32_t column=0; column<4; column+=2) {
+        ctx->h.h[column+0] = _mm_xor_ps(ctx->h.h[column+0], t1.h[column+0]);
+        ctx->h.h[column+1] = _mm_xor_ps(ctx->h.h[column+1], t1.h[column+1]);
+    }
+#elif defined(__MMX__)
+    for (uint_fast32_t column=0; column<8; column+=2) {
+        ctx->h.mq[column+0] = _mm_xor_si64(ctx->h.mq[column+0], t1.mq[column+0]);
+        ctx->h.mq[column+1] = _mm_xor_si64(ctx->h.mq[column+1], t1.mq[column+1]);
     }
 #else
     for (uint_fast32_t column=0; column<8; ++column) {
@@ -118,6 +124,17 @@ static void transform(struct kupyna256_ctx_t* ctx, const union uint512_t* b)
     _mm_store_ps((float*)(AQ1.h + 1), m2);
     _mm_store_ps((float*)(AQ1.h + 2), m3);
     _mm_store_ps((float*)(AQ1.h + 3), m4);
+#elif defined(__MMX__)
+    for (uint_fast32_t column=0; column<8; column+=2) {
+        __m64 m1 = b->mq[column+0];
+        __m64 m2 = b->mq[column+1];
+        __m64 m3 = _mm_xor_si64(ctx->h.mq[column+0], m1);
+        __m64 m4 = _mm_xor_si64(ctx->h.mq[column+1], m2);
+        AP1.mq[column+0] = m1;
+        AP1.mq[column+1] = m2;
+        AQ1.mq[column+0] = m3;
+        AQ1.mq[column+1] = m4;
+    }
 #else
     for (uint_fast32_t column=0; column<8; ++column) {
         AP1.q[column] = ctx->h.q[column] ^ b->q[column];
@@ -140,6 +157,13 @@ static void transform(struct kupyna256_ctx_t* ctx, const union uint512_t* b)
     ctx->h.h[1] = _mm_xor_ps(ctx->h.h[1], _mm_xor_ps(AQ1.h[1], AP1.h[1]));
     ctx->h.h[2] = _mm_xor_ps(ctx->h.h[2], _mm_xor_ps(AQ1.h[2], AP1.h[2]));
     ctx->h.h[3] = _mm_xor_ps(ctx->h.h[3], _mm_xor_ps(AQ1.h[3], AP1.h[3]));
+#elif defined(__MMX__)
+    for (uint_fast32_t column=0; column<8; column += 4) {
+        ctx->h.mq[column+0] = _mm_xor_si64(ctx->h.mq[column+0], _mm_xor_si64(AQ1.mq[column+0], AP1.mq[column+0]));
+        ctx->h.mq[column+1] = _mm_xor_si64(ctx->h.mq[column+1], _mm_xor_si64(AQ1.mq[column+1], AP1.mq[column+1]));
+        ctx->h.mq[column+2] = _mm_xor_si64(ctx->h.mq[column+2], _mm_xor_si64(AQ1.mq[column+2], AP1.mq[column+2]));
+        ctx->h.mq[column+3] = _mm_xor_si64(ctx->h.mq[column+3], _mm_xor_si64(AQ1.mq[column+3], AP1.mq[column+3]));
+    }
 #else
     for (uint_fast32_t column=0; column<8; ++column) {
         ctx->h.q[column] ^= AP1.q[column] ^ AQ1.q[column];
@@ -157,62 +181,69 @@ void kupyna256_init(struct kupyna256_ctx_t* ctx)
 
 void kupyna256_update(struct kupyna256_ctx_t* ctx, const uint8_t* data, size_t len)
 {
-    while (ctx->pos + len >= 64) {
+    size_t l = len;
+
+    if (ctx->pos && ctx->pos + len >= 64) {
         memcpy(ctx->m.b + ctx->pos, data, 64 - ctx->pos);
         transform(ctx, &ctx->m);
-        len        -= 64 - ctx->pos;
-        ctx->total += (64 - ctx->pos) * 8;
-        data       += 64 - ctx->pos;
-        ctx->pos    = 0;
+        len     -= 64 - ctx->pos;
+        data    += 64 - ctx->pos;
+        ctx->pos = 0;
     }
 
-    memcpy(ctx->m.b + ctx->pos, data, len);
-    ctx->pos   += len;
-    ctx->total += len * 8;
+    while (len >= 64) {
+        memcpy(ctx->m.b, data, 64);
+        transform(ctx, &ctx->m);
+        len  -= 64;
+        data += 64;
+    }
+
+    if (len) {
+        memcpy(ctx->m.b + ctx->pos, data, len);
+        ctx->pos += len;
+    }
+
+    ctx->total += l * 8;
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
 }
 
 void kupyna256_update_aligned(struct kupyna256_ctx_t* ctx, const uint8_t* data, size_t len)
 {
+    size_t l = len;
     assert(((size_t)data & 0x0F) == 0);
 
     if (ctx->pos && ctx->pos + len >= 64) {
         memcpy(ctx->m.b + ctx->pos, data, 64 - ctx->pos);
         transform(ctx, &ctx->m);
-        len        -= 64 - ctx->pos;
-        ctx->total += (64 - ctx->pos) * 8;
-        data       += 64 - ctx->pos;
-        ctx->pos    = 0;
+        len     -= 64 - ctx->pos;
+        data    += 64 - ctx->pos;
+        ctx->pos = 0;
     }
 
     while (len >= 64) {
-        transform(ctx, (union uint512_t*)data);
-        len        -= 64;
-        ctx->total += 64  * 8;
-        data       += 64;
+        transform(ctx, (const union uint512_t*)data);
+        len  -= 64;
+        data += 64;
     }
 
-    memcpy(ctx->m.b + ctx->pos, data, len);
-    ctx->pos   += len;
-    ctx->total += len * 8;
+    if (len) {
+        memcpy(ctx->m.b + ctx->pos, data, len);
+        ctx->pos += len;
+    }
+
+    ctx->total += l * 8;
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
 }
 
 void kupyna256_final(struct kupyna256_ctx_t* ctx, uint8_t* hash)
 {
-    ctx->m.b[ctx->pos] = 0x80;
-    ++ctx->pos;
-    if (ctx->pos > 52) {
-        memset(ctx->m.b + ctx->pos, 0, 64 - ctx->pos);
-        transform(ctx, &ctx->m);
-        ctx->pos = 0;
-    }
-
-    memset(ctx->m.b + ctx->pos, 0,           64 - ctx->pos);
-    memcpy(ctx->m.b + 52,       &ctx->total, sizeof(uint64_t));
-
-    transform(ctx, &ctx->m);
-    outputTransform(ctx);
-
-    memcpy(hash, ctx->h.b + 64 - 256/8, 256/8);
+    kupyna256_final2(ctx, hash, 256);
 }
 
 void kupyna256_final2(struct kupyna256_ctx_t* ctx, uint8_t* hash, size_t bits)
@@ -236,4 +267,8 @@ void kupyna256_final2(struct kupyna256_ctx_t* ctx, uint8_t* hash, size_t bits)
     outputTransform(ctx);
 
     memcpy(hash, ctx->h.b + 64 - bits/8, bits/8);
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
 }

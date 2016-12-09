@@ -87,24 +87,32 @@ static void outputTransform(struct kupyna512_ctx_t* ctx)
 {
     union uint1024_t t1;
     union uint1024_t t2;
+    uint_fast32_t column;
+    uint8_t r;
 
     memcpy(t1.q, ctx->h.q, sizeof(t1));
 
-    for (uint8_t r = 0; r < 14; r += 2) {
+    for (r=0; r<14; r+=2) {
         P(t1.q, t2.q, r);
     }
 
 #if defined(__SSE2__)
-    for (uint_fast32_t column = 0; column < 8; column+=2) {
-        ctx->h.h[column]   = _mm_xor_si128(ctx->h.h[column],   t1.h[column]);
+    for (column=0; column<8; column+=2) {
+        ctx->h.h[column+0] = _mm_xor_si128(ctx->h.h[column+0], t1.h[column+0]);
         ctx->h.h[column+1] = _mm_xor_si128(ctx->h.h[column+1], t1.h[column+1]);
     }
 #elif defined(__SSE__)
-    for (uint_fast32_t column = 0; column < 8; ++column) {
-        ctx->h.h[column] = _mm_xor_ps(ctx->h.h[column], t1.h[column]);
+    for (column=0; column<8; column+=2) {
+        ctx->h.h[column+0] = _mm_xor_ps(ctx->h.h[column+0], t1.h[column+0]);
+        ctx->h.h[column+1] = _mm_xor_ps(ctx->h.h[column+1], t1.h[column+1]);
+    }
+#elif defined(__MMX__)
+    for (column=0; column<16; column+=2) {
+        ctx->h.mq[column+0] = _mm_xor_si64(ctx->h.mq[column+0], t1.mq[column+0]);
+        ctx->h.mq[column+1] = _mm_xor_si64(ctx->h.mq[column+1], t1.mq[column+1]);
     }
 #else
-    for (uint_fast32_t column = 0; column < 16; ++column) {
+    for (column=0; column<16; ++column) {
         ctx->h.q[column] ^= t1.q[column];
     }
 #endif
@@ -115,9 +123,11 @@ static void transform(struct kupyna512_ctx_t* ctx, const union uint1024_t* b)
     union uint1024_t AQ1;
     union uint1024_t AP1;
     union uint1024_t tmp;
+    uint_fast32_t column;
+    uint8_t r;
 
 #if defined(__SSE2__)
-    for (uint_fast32_t column = 0; column < 8; column += 4) {
+    for (column=0; column<8; column+=4) {
         __m128i m1 = _mm_load_si128(b->h + column);
         __m128i m2 = _mm_load_si128(b->h + column + 1);
         __m128i m3 = _mm_load_si128(b->h + column + 2);
@@ -132,7 +142,7 @@ static void transform(struct kupyna512_ctx_t* ctx, const union uint1024_t* b)
         _mm_store_si128(AQ1.h + column + 3, m4);
     }
 #elif defined(__SSE__)
-    for (uint_fast32_t column = 0; column < 8; column += 4) {
+    for (column=0; column<8; column+=4) {
         __m128 m1 = _mm_load_ps((float*)(b->h + column));
         __m128 m2 = _mm_load_ps((float*)(b->h + column + 1));
         __m128 m3 = _mm_load_ps((float*)(b->h + column + 2));
@@ -146,34 +156,52 @@ static void transform(struct kupyna512_ctx_t* ctx, const union uint1024_t* b)
         _mm_store_ps((float*)(AQ1.h + column + 2), m3);
         _mm_store_ps((float*)(AQ1.h + column + 3), m4);
     }
+#elif defined(__MMX__)
+    for (column=0; column<16; column+=2) {
+        __m64 m1 = b->mq[column+0];
+        __m64 m2 = b->mq[column+1];
+        __m64 m3 = _mm_xor_si64(ctx->h.mq[column+0], m1);
+        __m64 m4 = _mm_xor_si64(ctx->h.mq[column+1], m2);
+        AP1.mq[column+0] = m1;
+        AP1.mq[column+1] = m2;
+        AQ1.mq[column+0] = m3;
+        AQ1.mq[column+1] = m4;
+    }
 #else
-    for (uint_fast32_t column = 0; column < 16; ++column) {
+    for (column=0; column<16; ++column) {
         AP1.q[column] = ctx->h.q[column] ^ b->q[column];
         AQ1.q[column] = b->q[column];
     }
 #endif
 
-    for (uint8_t r = 0; r < 14; r += 2) {
+    for (r=0; r<14; r+=2) {
         P(AP1.q, tmp.q, r);
         Q(AQ1.q, tmp.q, r);
     }
 
 #if defined(__SSE2__)
-    for (uint_fast32_t column = 0; column < 8; column += 4) {
+    for (column=0; column<8; column+=4) {
         ctx->h.h[column]   = _mm_xor_si128(ctx->h.h[column],   _mm_xor_si128(AQ1.h[column],   AP1.h[column]));
         ctx->h.h[column+1] = _mm_xor_si128(ctx->h.h[column+1], _mm_xor_si128(AQ1.h[column+1], AP1.h[column+1]));
         ctx->h.h[column+2] = _mm_xor_si128(ctx->h.h[column+2], _mm_xor_si128(AQ1.h[column+2], AP1.h[column+2]));
         ctx->h.h[column+3] = _mm_xor_si128(ctx->h.h[column+3], _mm_xor_si128(AQ1.h[column+3], AP1.h[column+3]));
     }
 #elif defined(__SSE__)
-    for (uint_fast32_t column = 0; column < 8; column += 4) {
+    for (column=0; column<8; column+=4) {
         ctx->h.h[column]   = _mm_xor_ps(ctx->h.h[column],   _mm_xor_ps(AQ1.h[column],   AP1.h[column]));
         ctx->h.h[column+1] = _mm_xor_ps(ctx->h.h[column+1], _mm_xor_ps(AQ1.h[column+1], AP1.h[column+1]));
         ctx->h.h[column+2] = _mm_xor_ps(ctx->h.h[column+2], _mm_xor_ps(AQ1.h[column+2], AP1.h[column+2]));
         ctx->h.h[column+3] = _mm_xor_ps(ctx->h.h[column+3], _mm_xor_ps(AQ1.h[column+3], AP1.h[column+3]));
     }
+#elif defined(__MMX__)
+    for (column=0; column<16; column += 4) {
+        ctx->h.mq[column+0] = _mm_xor_si64(ctx->h.mq[column+0], _mm_xor_si64(AQ1.mq[column+0], AP1.mq[column+0]));
+        ctx->h.mq[column+1] = _mm_xor_si64(ctx->h.mq[column+1], _mm_xor_si64(AQ1.mq[column+1], AP1.mq[column+1]));
+        ctx->h.mq[column+2] = _mm_xor_si64(ctx->h.mq[column+2], _mm_xor_si64(AQ1.mq[column+2], AP1.mq[column+2]));
+        ctx->h.mq[column+3] = _mm_xor_si64(ctx->h.mq[column+3], _mm_xor_si64(AQ1.mq[column+3], AP1.mq[column+3]));
+    }
 #else
-    for (uint_fast32_t column = 0; column < 16; ++column) {
+    for (column=0; column<16; ++column) {
         ctx->h.q[column] ^= AP1.q[column] ^ AQ1.q[column];
     }
 #endif
@@ -189,62 +217,69 @@ void kupyna512_init(struct kupyna512_ctx_t* ctx)
 
 void kupyna512_update(struct kupyna512_ctx_t* ctx, const uint8_t* data, size_t len)
 {
-    while (ctx->pos + len >= 128) {
+    size_t l = len;
+
+    if (ctx->pos && ctx->pos + len >= 128) {
         memcpy(ctx->m.b + ctx->pos, data, 128 - ctx->pos);
         transform(ctx, &ctx->m);
-        len        -= 128 - ctx->pos;
-        ctx->total += (128 - ctx->pos) * 8;
-        data       += 128 - ctx->pos;
-        ctx->pos    = 0;
+        len     -= 128 - ctx->pos;
+        data    += 128 - ctx->pos;
+        ctx->pos = 0;
     }
 
-    memcpy(ctx->m.b + ctx->pos, data, len);
-    ctx->pos   += len;
-    ctx->total += len * 8;
+    while (len >= 128) {
+        memcpy(ctx->m.b, data, 128);
+        transform(ctx, &ctx->m);
+        len  -= 128;
+        data += 128;
+    }
+
+    if (len) {
+        memcpy(ctx->m.b + ctx->pos, data, len);
+        ctx->pos += len;
+    }
+
+    ctx->total += l * 8;
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
 }
 
 void kupyna512_update_aligned(struct kupyna512_ctx_t* ctx, const uint8_t* data, size_t len)
 {
     assert(((size_t)data & 0x0F) == 0);
+    size_t l = len;
 
     if (ctx->pos && ctx->pos + len >= 128) {
         memcpy(ctx->m.b + ctx->pos, data, 128 - ctx->pos);
         transform(ctx, &ctx->m);
-        len        -= 128 - ctx->pos;
-        ctx->total += (128 - ctx->pos) * 8;
-        data       += 128 - ctx->pos;
-        ctx->pos    = 0;
+        len     -= 128 - ctx->pos;
+        data    += 128 - ctx->pos;
+        ctx->pos = 0;
     }
 
     while (len >= 128) {
-        transform(ctx, (union uint1024_t*)data);
-        len        -= 128;
-        ctx->total += 128  * 8;
-        data       += 128;
+        transform(ctx, (const union uint1024_t*)data);
+        len  -= 128;
+        data += 128;
     }
 
-    memcpy(ctx->m.b + ctx->pos, data, len);
-    ctx->pos   += len;
-    ctx->total += len * 8;
+    if (len) {
+        memcpy(ctx->m.b + ctx->pos, data, len);
+        ctx->pos += len;
+    }
+
+    ctx->total += l * 8;
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
 }
 
 void kupyna512_final(struct kupyna512_ctx_t* ctx, uint8_t* hash)
 {
-    ctx->m.b[ctx->pos] = 0x80;
-    ++ctx->pos;
-    if (ctx->pos > 116) {
-        memset(ctx->m.b + ctx->pos, 0, 128 - ctx->pos);
-        transform(ctx, &ctx->m);
-        ctx->pos = 0;
-    }
-
-    memset(ctx->m.b + ctx->pos, 0,           128 - ctx->pos);
-    memcpy(ctx->m.b + 116,      &ctx->total, sizeof(uint64_t));
-
-    transform(ctx, &ctx->m);
-    outputTransform(ctx);
-
-    memcpy(hash, ctx->h.b + 128 - 512/8, 512/8);
+    kupyna512_final2(ctx, hash, 512);
 }
 
 void kupyna512_final2(struct kupyna512_ctx_t* ctx, uint8_t* hash, size_t bits)
@@ -268,4 +303,28 @@ void kupyna512_final2(struct kupyna512_ctx_t* ctx, uint8_t* hash, size_t bits)
     outputTransform(ctx);
 
     memcpy(hash, ctx->h.b + 128 - bits/8, bits/8);
+
+#if (defined(__MMX__) || defined(__SSE__) || defined(__SSE2__))
+    _mm_empty();
+#endif
+}
+
+void kupyna384_init(struct kupyna512_ctx_t* ctx)
+{
+    kupyna512_init(ctx);
+}
+
+void kupyna384_update(struct kupyna512_ctx_t* ctx, const uint8_t* data, size_t len)
+{
+    kupyna512_update(ctx, data, len);
+}
+
+void kupyna384_update_aligned(struct kupyna512_ctx_t* ctx, const uint8_t* data, size_t len)
+{
+    kupyna512_update_aligned(ctx, data, len);
+}
+
+void kupyna384_final(struct kupyna512_ctx_t* ctx, uint8_t* hash)
+{
+    kupyna512_final2(ctx, hash, 384);
 }

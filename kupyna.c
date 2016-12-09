@@ -17,6 +17,13 @@ static void hash_kupyna256_init(void* context)
 	kupyna256_init(ctx);
 }
 
+static void hash_kupyna384_init(void* context)
+{
+	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
+	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
+	kupyna384_init(ctx);
+}
+
 static void hash_kupyna512_init(void* context)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
@@ -31,6 +38,13 @@ static void hash_kupyna256_update(void* context, const unsigned char* buf, unsig
 	kupyna256_update(ctx, buf, count);
 }
 
+static void hash_kupyna384_update(void* context, const unsigned char* buf, unsigned int count)
+{
+	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
+	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
+	kupyna384_update(ctx, buf, count);
+}
+
 static void hash_kupyna512_update(void* context, const unsigned char* buf, unsigned int count)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
@@ -43,6 +57,13 @@ static void hash_kupyna256_final(unsigned char* digest, void* context)
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna256_ctx_t* ctx = (struct kupyna256_ctx_t*)((char*)context + offset);
 	kupyna256_final(ctx, digest);
+}
+
+static void hash_kupyna384_final(unsigned char* digest, void* context)
+{
+	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
+	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
+	kupyna384_final(ctx, digest);
 }
 
 static void hash_kupyna512_final(unsigned char* digest, void* context)
@@ -64,6 +85,18 @@ const php_hash_ops kupyna256_hash_ops = {
 	(sizeof(struct kupyna256_ctx_t) + 15)
 };
 
+const php_hash_ops kupyna384_hash_ops = {
+	hash_kupyna384_init,
+	hash_kupyna384_update,
+	hash_kupyna384_final,
+#if PHP_VERSION_ID >= 50300
+	(php_hash_copy_func_t)php_hash_copy,
+#endif
+	48,
+	128,
+	(sizeof(struct kupyna512_ctx_t) + 15)
+};
+
 const php_hash_ops kupyna512_hash_ops = {
 	hash_kupyna512_init,
 	hash_kupyna512_update,
@@ -79,6 +112,7 @@ const php_hash_ops kupyna512_hash_ops = {
 static PHP_MINIT_FUNCTION(kupyna)
 {
 	php_hash_register_algo("kupyna256", &kupyna256_hash_ops);
+	php_hash_register_algo("kupyna384", &kupyna384_hash_ops);
 	php_hash_register_algo("kupyna512", &kupyna512_hash_ops);
 	return SUCCESS;
 }

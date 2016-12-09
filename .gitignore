@@ -30,3 +30,4 @@ run-tests.php
 modules/
 *.la
 *.*~
+tmp-php.ini
