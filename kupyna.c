@@ -2,13 +2,16 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <main/php.h>
 #include <Zend/zend.h>
 #include <ext/hash/php_hash.h>
 #include <ext/standard/info.h>
+#include <ext/standard/md5.h>
 #include "php_kupyna.h"
 #include "kupyna256.h"
 #include "kupyna512.h"
+#include "kupyna_kmac.h"
 
 static void hash_kupyna256_init(void* context)
 {
@@ -125,6 +128,132 @@ static PHP_MINFO_FUNCTION(kupyna)
 	php_info_print_table_end();
 }
 
+static PHP_FUNCTION(kupyna256_kmac)
+{
+	char* key;
+	char* data;
+#if PHP_MAJOR_VERSION < 7
+	int key_len;
+	int data_len;
+#else
+	size_t key_len;
+	size_t data_len;
+#endif
+
+	uint8_t mac[32];
+	char result[65];
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &key, &key_len, &data, &data_len)) {
+		RETURN_NULL();
+	}
+
+	if (key_len < 32) {
+		struct kupyna256_ctx_t ctx;
+		kupyna256_init(&ctx);
+		kupyna256_update(&ctx, (uint8_t*)key, key_len);
+		kupyna256_final(&ctx, mac);
+		kupyna256_kmac(mac, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+	else {
+		kupyna256_kmac((const uint8_t*)key, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+
+	make_digest_ex(result, mac, 32);
+#if PHP_MAJOR_VERSION < 7
+	RETURN_STRINGL(result, 64, 1);
+#else
+	RETURN_STRINGL(result, 64);
+#endif
+}
+
+static PHP_FUNCTION(kupyna384_kmac)
+{
+	char* key;
+	char* data;
+#if PHP_MAJOR_VERSION < 7
+	int key_len;
+	int data_len;
+#else
+	size_t key_len;
+	size_t data_len;
+#endif
+
+	uint8_t mac[48];
+	char result[97];
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &key, &key_len, &data, &data_len)) {
+		RETURN_NULL();
+	}
+
+	if (key_len < 48) {
+		struct kupyna512_ctx_t ctx;
+		kupyna384_init(&ctx);
+		kupyna384_update(&ctx, (uint8_t*)key, key_len);
+		kupyna384_final(&ctx, mac);
+		kupyna384_kmac(mac, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+	else {
+		kupyna384_kmac((const uint8_t*)key, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+
+	make_digest_ex(result, mac, 48);
+#if PHP_MAJOR_VERSION < 7
+	RETURN_STRINGL(result, 96, 1);
+#else
+	RETURN_STRINGL(result, 96);
+#endif
+}
+
+static PHP_FUNCTION(kupyna512_kmac)
+{
+	char* key;
+	char* data;
+#if PHP_MAJOR_VERSION < 7
+	int key_len;
+	int data_len;
+#else
+	size_t key_len;
+	size_t data_len;
+#endif
+
+	uint8_t mac[64];
+	char result[129];
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &key, &key_len, &data, &data_len)) {
+		RETURN_NULL();
+	}
+
+	if (key_len < 64) {
+		struct kupyna512_ctx_t ctx;
+		kupyna512_init(&ctx);
+		kupyna512_update(&ctx, (uint8_t*)key, key_len);
+		kupyna512_final(&ctx, mac);
+		kupyna512_kmac(mac, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+	else {
+		kupyna512_kmac((const uint8_t*)key, (const uint8_t*)data, (size_t)data_len, mac);
+	}
+
+	make_digest_ex(result, mac, 64);
+#if PHP_MAJOR_VERSION < 7
+	RETURN_STRINGL(result, 128, 1);
+#else
+	RETURN_STRINGL(result, 128);
+#endif
+}
+
+ZEND_BEGIN_ARG_INFO(arginfo_kmac, 2)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, data)
+ZEND_END_ARG_INFO()
+
+static const zend_function_entry kupyna_functions[] = {
+	PHP_FE(kupyna256_kmac, arginfo_kmac)
+	PHP_FE(kupyna384_kmac, arginfo_kmac)
+	PHP_FE(kupyna512_kmac, arginfo_kmac)
+	PHP_FE_END
+};
+
 static
 #if ZEND_MODULE_API_NO > 20060613
 const
@@ -139,7 +268,7 @@ zend_module_entry kupyna_module_entry = {
 	NULL,
 	kupyna_deps,
 	PHP_KUPYNA_EXTNAME,
-	NULL,
+	kupyna_functions,
 	PHP_MINIT(kupyna),
 	NULL,
 	NULL,
