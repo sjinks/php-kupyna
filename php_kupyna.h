@@ -19,6 +19,7 @@
 
 
 ZEND_DLEXPORT extern const php_hash_ops kupyna256_hash_ops;
+ZEND_DLEXPORT extern const php_hash_ops kupyna384_hash_ops;
 ZEND_DLEXPORT extern const php_hash_ops kupyna512_hash_ops;
 
 #ifdef COMPILE_DL_KUPYNA
