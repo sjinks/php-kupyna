@@ -1,10 +1,4 @@
-language:
-  - php
-  - c
-
-compiler:
-  - gcc
-  - clang
+language: php
 
 sudo: false
 
@@ -13,9 +7,22 @@ php:
   - 5.6
   - 7.0
   - 7.1
+  - nightly
+
+env:
+  global:
+    - CFLAGS="-O2 -g3 -Wall -Werror"
+  matrix:
+    - CC=gcc
+    - CC=clang
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: nightly
 
 before_script:
-  - phpize && ./configure CFLAGS="-O2 -g3 -Wall -Werror" --silent && make --silent && make install
+  - phpize && ./configure --silent && make --silent && make install
 
 script:
   - .travis/run_php_tests.sh
