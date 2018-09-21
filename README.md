@@ -2,7 +2,7 @@
 
 DSTU 7564:2014 (Kupyna) Hash Function implementation for PHP.
 
-Tested with PHP 5.4, 5.5, 5.6, 7.0, 7.1
+Tested with PHP 5.4, 5.5, 5.6, 7.0, 7.1, 7.2, nightly (7.3 as of writing)
 
 ## Introduction
 
