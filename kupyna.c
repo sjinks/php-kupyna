@@ -34,21 +34,45 @@ static void hash_kupyna512_init(void* context)
 	kupyna512_init(ctx);
 }
 
-static void hash_kupyna256_update(void* context, const unsigned char* buf, unsigned int count)
+static void hash_kupyna256_update(
+	void* context,
+	const unsigned char* buf,
+#if PHP_VERSION_ID >= 70400
+	size_t count
+#else
+	unsigned int count
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna256_ctx_t* ctx = (struct kupyna256_ctx_t*)((char*)context + offset);
 	kupyna256_update(ctx, buf, count);
 }
 
-static void hash_kupyna384_update(void* context, const unsigned char* buf, unsigned int count)
+static void hash_kupyna384_update(
+	void* context,
+	const unsigned char* buf,
+#if PHP_VERSION_ID >= 70400
+	size_t count
+#else
+	unsigned int count
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
 	kupyna384_update(ctx, buf, count);
 }
 
-static void hash_kupyna512_update(void* context, const unsigned char* buf, unsigned int count)
+static void hash_kupyna512_update(
+	void* context,
+	const unsigned char* buf,
+#if PHP_VERSION_ID >= 70400
+	size_t count
+#else
+	unsigned int count
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
@@ -77,39 +101,72 @@ static void hash_kupyna512_final(unsigned char* digest, void* context)
 }
 
 const php_hash_ops kupyna256_hash_ops = {
+#if PHP_VERSION_ID >= 80000
+	"kupyna256",
+#endif
 	hash_kupyna256_init,
 	hash_kupyna256_update,
 	hash_kupyna256_final,
 #if PHP_VERSION_ID >= 50300
 	(php_hash_copy_func_t)php_hash_copy,
 #endif
+#if PHP_VERSION_ID >= 80000
+	NULL,
+	NULL,
+	NULL,
+#endif
 	32,
 	64,
 	(sizeof(struct kupyna256_ctx_t) + 15)
+#if PHP_VERSION_ID >= 70400
+	, 1
+#endif
 };
 
 const php_hash_ops kupyna384_hash_ops = {
+#if PHP_VERSION_ID >= 80000
+	"kupyna384",
+#endif
 	hash_kupyna384_init,
 	hash_kupyna384_update,
 	hash_kupyna384_final,
 #if PHP_VERSION_ID >= 50300
 	(php_hash_copy_func_t)php_hash_copy,
 #endif
+#if PHP_VERSION_ID >= 80000
+	NULL,
+	NULL,
+	NULL,
+#endif
 	48,
 	128,
 	(sizeof(struct kupyna512_ctx_t) + 15)
+#if PHP_VERSION_ID >= 70400
+	, 1
+#endif
 };
 
 const php_hash_ops kupyna512_hash_ops = {
+#if PHP_VERSION_ID >= 80000
+	"kupyna512",
+#endif
 	hash_kupyna512_init,
 	hash_kupyna512_update,
 	hash_kupyna512_final,
 #if PHP_VERSION_ID >= 50300
 	(php_hash_copy_func_t)php_hash_copy,
 #endif
+#if PHP_VERSION_ID >= 80000
+	NULL,
+	NULL,
+	NULL,
+#endif
 	64,
 	128,
 	(sizeof(struct kupyna512_ctx_t) + 15)
+#if PHP_VERSION_ID >= 70400
+	, 1
+#endif
 };
 
 static PHP_MINIT_FUNCTION(kupyna)

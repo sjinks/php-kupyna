@@ -5,7 +5,7 @@
 #include <ext/hash/php_hash.h>
 
 #define PHP_KUPYNA_EXTNAME  "kupyna"
-#define PHP_KUPYNA_EXTVER   "0.2"
+#define PHP_KUPYNA_EXTVER   "1.0.0"
 
 #ifndef ZEND_MOD_END
 #define ZEND_MOD_END { NULL, NULL, NULL, 0 }
