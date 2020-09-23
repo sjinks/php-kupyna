@@ -12,9 +12,6 @@ php:
 env:
   global:
     - CFLAGS="-O2 -g3 -Wall -Werror"
-  matrix:
-    - CC=gcc
-    - CC=clang
 
 matrix:
   fast_finish: true
