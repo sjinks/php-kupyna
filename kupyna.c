@@ -13,6 +13,10 @@
 #include "kupyna512.h"
 #include "kupyna_kmac.h"
 
+#if PHP_VERSION_ID >= 80000
+#define TSRMLS_CC
+#endif
+
 static void hash_kupyna256_init(void* context)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
