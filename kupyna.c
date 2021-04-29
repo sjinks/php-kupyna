@@ -17,21 +17,36 @@
 #define TSRMLS_CC
 #endif
 
-static void hash_kupyna256_init(void* context)
+static void hash_kupyna256_init(
+	void* context
+#if PHP_VERSION_ID >= 80100
+	, ZEND_ATTRIBUTE_UNUSED HashTable* args
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna256_ctx_t* ctx = (struct kupyna256_ctx_t*)((char*)context + offset);
 	kupyna256_init(ctx);
 }
 
-static void hash_kupyna384_init(void* context)
+static void hash_kupyna384_init(
+	void* context
+#if PHP_VERSION_ID >= 80100
+	, ZEND_ATTRIBUTE_UNUSED HashTable* args
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
 	kupyna384_init(ctx);
 }
 
-static void hash_kupyna512_init(void* context)
+static void hash_kupyna512_init(
+	void* context
+#if PHP_VERSION_ID >= 80100
+	, ZEND_ATTRIBUTE_UNUSED HashTable* args
+#endif
+)
 {
 	size_t offset               = (((size_t)context + 15) & ~0x0F) - (size_t)context;
 	struct kupyna512_ctx_t* ctx = (struct kupyna512_ctx_t*)((char*)context + offset);
