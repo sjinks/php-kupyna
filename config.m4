@@ -4,6 +4,6 @@ if test "$PHP_KUPYNA" = "yes"; then
 	PHP_C_BIGENDIAN
 
 	AC_DEFINE([HAVE_KUPYNA], [1], [Whether DSTU 7564:2014 Hash Function is supported])
-	PHP_NEW_EXTENSION([kupyna], [kupyna.c kupyna256.c kupyna512.c kupyna_kmac.c kupyna_tables.c], $ext_shared,, [-Wall -std=gnu99])
+	PHP_NEW_EXTENSION([kupyna], [kupyna.c kupyna256.c kupyna512.c kupyna_kmac.c kupyna_tables.c], $ext_shared,, [-Wall -std=gnu99 -D_GNU_SOURCE])
 	PHP_ADD_EXTENSION_DEP([kupyna], [hash])
 fi
