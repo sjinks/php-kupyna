@@ -29,14 +29,14 @@ static inline void G1(const uint64_t* x, uint64_t* y, uint64_t round)
 
 static inline void G2(const uint64_t* x, uint64_t* y, uint64_t round)
 {
-    y[0] = (T0[(uint8_t)x[0]] ^ T1[(uint8_t)(x[7] >> 8)] ^ T2[(uint8_t)(x[6] >> 16)] ^ T3[(uint8_t)(x[5] >> 24)] ^ T4[(uint8_t)(x[4] >> 32)] ^ T5[(uint8_t)(x[3] >> 40)] ^ T6[(uint8_t)(x[2] >> 48)] ^ T7[(uint8_t)(x[1] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 0) * 0x10) ^ round)) << 56));
-    y[1] = (T0[(uint8_t)x[1]] ^ T1[(uint8_t)(x[0] >> 8)] ^ T2[(uint8_t)(x[7] >> 16)] ^ T3[(uint8_t)(x[6] >> 24)] ^ T4[(uint8_t)(x[5] >> 32)] ^ T5[(uint8_t)(x[4] >> 40)] ^ T6[(uint8_t)(x[3] >> 48)] ^ T7[(uint8_t)(x[2] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 1) * 0x10) ^ round)) << 56));
-    y[2] = (T0[(uint8_t)x[2]] ^ T1[(uint8_t)(x[1] >> 8)] ^ T2[(uint8_t)(x[0] >> 16)] ^ T3[(uint8_t)(x[7] >> 24)] ^ T4[(uint8_t)(x[6] >> 32)] ^ T5[(uint8_t)(x[5] >> 40)] ^ T6[(uint8_t)(x[4] >> 48)] ^ T7[(uint8_t)(x[3] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 2) * 0x10) ^ round)) << 56));
-    y[3] = (T0[(uint8_t)x[3]] ^ T1[(uint8_t)(x[2] >> 8)] ^ T2[(uint8_t)(x[1] >> 16)] ^ T3[(uint8_t)(x[0] >> 24)] ^ T4[(uint8_t)(x[7] >> 32)] ^ T5[(uint8_t)(x[6] >> 40)] ^ T6[(uint8_t)(x[5] >> 48)] ^ T7[(uint8_t)(x[4] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 3) * 0x10) ^ round)) << 56));
-    y[4] = (T0[(uint8_t)x[4]] ^ T1[(uint8_t)(x[3] >> 8)] ^ T2[(uint8_t)(x[2] >> 16)] ^ T3[(uint8_t)(x[1] >> 24)] ^ T4[(uint8_t)(x[0] >> 32)] ^ T5[(uint8_t)(x[7] >> 40)] ^ T6[(uint8_t)(x[6] >> 48)] ^ T7[(uint8_t)(x[5] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 4) * 0x10) ^ round)) << 56));
-    y[5] = (T0[(uint8_t)x[5]] ^ T1[(uint8_t)(x[4] >> 8)] ^ T2[(uint8_t)(x[3] >> 16)] ^ T3[(uint8_t)(x[2] >> 24)] ^ T4[(uint8_t)(x[1] >> 32)] ^ T5[(uint8_t)(x[0] >> 40)] ^ T6[(uint8_t)(x[7] >> 48)] ^ T7[(uint8_t)(x[6] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 5) * 0x10) ^ round)) << 56));
-    y[6] = (T0[(uint8_t)x[6]] ^ T1[(uint8_t)(x[5] >> 8)] ^ T2[(uint8_t)(x[4] >> 16)] ^ T3[(uint8_t)(x[3] >> 24)] ^ T4[(uint8_t)(x[2] >> 32)] ^ T5[(uint8_t)(x[1] >> 40)] ^ T6[(uint8_t)(x[0] >> 48)] ^ T7[(uint8_t)(x[7] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 6) * 0x10) ^ round)) << 56));
-    y[7] = (T0[(uint8_t)x[7]] ^ T1[(uint8_t)(x[6] >> 8)] ^ T2[(uint8_t)(x[5] >> 16)] ^ T3[(uint8_t)(x[4] >> 24)] ^ T4[(uint8_t)(x[3] >> 32)] ^ T5[(uint8_t)(x[2] >> 40)] ^ T6[(uint8_t)(x[1] >> 48)] ^ T7[(uint8_t)(x[0] >> 56)]) + (0x00F0F0F0F0F0F0F3ull ^ (((uint64_t)(((7 - 7) * 0x10) ^ round)) << 56));
+    y[0] = (T0[(uint8_t)x[0]] ^ T1[(uint8_t)(x[7] >> 8)] ^ T2[(uint8_t)(x[6] >> 16)] ^ T3[(uint8_t)(x[5] >> 24)] ^ T4[(uint8_t)(x[4] >> 32)] ^ T5[(uint8_t)(x[3] >> 40)] ^ T6[(uint8_t)(x[2] >> 48)] ^ T7[(uint8_t)(x[1] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 0) * 0x10) ^ round) << 56));
+    y[1] = (T0[(uint8_t)x[1]] ^ T1[(uint8_t)(x[0] >> 8)] ^ T2[(uint8_t)(x[7] >> 16)] ^ T3[(uint8_t)(x[6] >> 24)] ^ T4[(uint8_t)(x[5] >> 32)] ^ T5[(uint8_t)(x[4] >> 40)] ^ T6[(uint8_t)(x[3] >> 48)] ^ T7[(uint8_t)(x[2] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 1) * 0x10) ^ round) << 56));
+    y[2] = (T0[(uint8_t)x[2]] ^ T1[(uint8_t)(x[1] >> 8)] ^ T2[(uint8_t)(x[0] >> 16)] ^ T3[(uint8_t)(x[7] >> 24)] ^ T4[(uint8_t)(x[6] >> 32)] ^ T5[(uint8_t)(x[5] >> 40)] ^ T6[(uint8_t)(x[4] >> 48)] ^ T7[(uint8_t)(x[3] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 2) * 0x10) ^ round) << 56));
+    y[3] = (T0[(uint8_t)x[3]] ^ T1[(uint8_t)(x[2] >> 8)] ^ T2[(uint8_t)(x[1] >> 16)] ^ T3[(uint8_t)(x[0] >> 24)] ^ T4[(uint8_t)(x[7] >> 32)] ^ T5[(uint8_t)(x[6] >> 40)] ^ T6[(uint8_t)(x[5] >> 48)] ^ T7[(uint8_t)(x[4] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 3) * 0x10) ^ round) << 56));
+    y[4] = (T0[(uint8_t)x[4]] ^ T1[(uint8_t)(x[3] >> 8)] ^ T2[(uint8_t)(x[2] >> 16)] ^ T3[(uint8_t)(x[1] >> 24)] ^ T4[(uint8_t)(x[0] >> 32)] ^ T5[(uint8_t)(x[7] >> 40)] ^ T6[(uint8_t)(x[6] >> 48)] ^ T7[(uint8_t)(x[5] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 4) * 0x10) ^ round) << 56));
+    y[5] = (T0[(uint8_t)x[5]] ^ T1[(uint8_t)(x[4] >> 8)] ^ T2[(uint8_t)(x[3] >> 16)] ^ T3[(uint8_t)(x[2] >> 24)] ^ T4[(uint8_t)(x[1] >> 32)] ^ T5[(uint8_t)(x[0] >> 40)] ^ T6[(uint8_t)(x[7] >> 48)] ^ T7[(uint8_t)(x[6] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 5) * 0x10) ^ round) << 56));
+    y[6] = (T0[(uint8_t)x[6]] ^ T1[(uint8_t)(x[5] >> 8)] ^ T2[(uint8_t)(x[4] >> 16)] ^ T3[(uint8_t)(x[3] >> 24)] ^ T4[(uint8_t)(x[2] >> 32)] ^ T5[(uint8_t)(x[1] >> 40)] ^ T6[(uint8_t)(x[0] >> 48)] ^ T7[(uint8_t)(x[7] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 6) * 0x10) ^ round) << 56));
+    y[7] = (T0[(uint8_t)x[7]] ^ T1[(uint8_t)(x[6] >> 8)] ^ T2[(uint8_t)(x[5] >> 16)] ^ T3[(uint8_t)(x[4] >> 24)] ^ T4[(uint8_t)(x[3] >> 32)] ^ T5[(uint8_t)(x[2] >> 40)] ^ T6[(uint8_t)(x[1] >> 48)] ^ T7[(uint8_t)(x[0] >> 56)]) + (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - 7) * 0x10) ^ round) << 56));
 }
 
 static inline void P(uint64_t* x, uint64_t* y, uint64_t round)
@@ -52,7 +52,7 @@ static inline void P(uint64_t* x, uint64_t* y, uint64_t round)
 static inline void Q(uint64_t* x, uint64_t* y, uint64_t round)
 {
     for (uint_fast32_t j = 0; j < 8; ++j) {
-        x[j] += (0x00F0F0F0F0F0F0F3ULL ^ (((uint64_t)(((7 - j) * 0x10) ^ round)) << 56));
+        x[j] += (0x00F0F0F0F0F0F0F3ULL ^ ((((7 - j) * 0x10) ^ round) << 56));
     }
 
     G2(x, y, round + 1);
