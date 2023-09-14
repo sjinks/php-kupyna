@@ -1,6 +1,7 @@
 # php-kupyna
 
 [![Build and Test](https://github.com/sjinks/php-kupyna/actions/workflows/test.yml/badge.svg)](https://github.com/sjinks/php-kupyna/actions/workflows/test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sjinks_php-kupyna&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sjinks_php-kupyna)
 
 DSTU 7564:2014 (Kupyna) Hash Function Implementation for PHP.
 
