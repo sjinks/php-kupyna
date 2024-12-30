@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  CFLAGS: "-O2 -g3 -Wall -Werror"
+  CFLAGS: "-O2 -g3 -Wall -Werror -Wno-typedef-redefinition"
 
 jobs:
   ci:
@@ -14,7 +14,7 @@ jobs:
       contents: read
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') || github.event_name == 'workflow_dispatch' }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         compiler:
           - CC: clang
@@ -25,6 +25,8 @@ jobs:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
+          - '8.5'
     name: "Build and Test (PHP ${{ matrix.php }}, CC: ${{ matrix.compiler.CC }})"
     runs-on: ubuntu-latest
     steps:
